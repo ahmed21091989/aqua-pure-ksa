@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aqua Pure KSA - النظام السحابي المتكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #0284c7;
@@ -24,12 +23,9 @@
         body {
             background-color: var(--bg-light);
             color: var(--text-main);
-            display: flex;
             min-height: 100vh;
             direction: rtl;
-            overflow-x: hidden;
         }
-        /* القائمة الجانبية ثابتة على اليمين تماماً */
         aside {
             width: var(--sidebar-width);
             background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
@@ -69,6 +65,7 @@
             font-size: 0.9rem;
             transition: all 0.3s ease;
             border-right: 4px solid transparent;
+            cursor: pointer;
         }
         .sidebar-menu li.active a, .sidebar-menu li a:hover {
             background-color: rgba(255,255,255,0.1);
@@ -77,11 +74,9 @@
         .sidebar-menu li a span {
             margin-right: 10px;
         }
-        /* المحتوى الرئيسي بعيد عن القائمة من اليمين */
         main {
-            flex: 1;
             margin-right: var(--sidebar-width);
-            padding: 25px;
+            padding: 30px;
             background-color: var(--bg-light);
             min-height: 100vh;
         }
@@ -112,21 +107,40 @@
             color: var(--primary-dark);
             margin-bottom: 15px;
         }
-        /* ضبط الموبايل بحيث تظهر القائمة والنصوص كاملة وواضحة ومنسقة */
         @media (max-width: 768px) {
-            :root {
-                --sidebar-width: 210px;
+            aside {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: none;
             }
-            main {
-                margin-right: var(--sidebar-width);
-                padding: 15px;
+            .sidebar-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 5px;
             }
-            .sidebar-header h2 {
-                font-size: 1rem;
+            .sidebar-menu li {
+                flex: 0 0 33.33%;
+                text-align: center;
             }
             .sidebar-menu li a {
-                padding: 10px 12px;
-                font-size: 0.85rem;
+                padding: 8px 5px;
+                font-size: 0.75rem;
+                justify-content: center;
+                border-right: none;
+                border-bottom: 3px solid transparent;
+            }
+            .sidebar-menu li.active a, .sidebar-menu li a:hover {
+                border-bottom-color: #ffffff;
+                border-right-color: transparent;
+            }
+            .sidebar-menu li a span {
+                margin-right: 4px;
+            }
+            main {
+                margin-right: 0;
+                padding: 15px;
             }
         }
     </style>
@@ -139,30 +153,30 @@
             <p>النظام السحابي المتكامل</p>
         </div>
         <ul class="sidebar-menu">
-            <li class="active"><a href="#">🏠 <span>الرئيسية</span></a></li>
-            <li><a href="#">👥 <span>العملاء والموردون</span></a></li>
-            <li><a href="#">📋 <span>بطاقات الصيانَات</span></a></li>
-            <li><a href="#">⏰ <span>تذكير الصيانَات</span></a></li>
-            <li><a href="#">👷 <span>إدارة الفنيين</span></a></li>
-            <li><a href="#">📦 <span>مخزن الفنيين</span></a></li>
-            <li><a href="#">⚙️ <span>البيانات الأساسية</span></a></li>
-            <li><a href="#">🛡️ <span>كروت الضمان</span></a></li>
-            <li><a href="#">📊 <span>التقارير الشاملة</span></a></li>
-            <li><a href="#">🔑 <span>المستخدمون والصلاحيات</span></a></li>
-            <li><a href="#">🛠️ <span>الإعدادات الأساسية</span></a></li>
+            <li class="active"><a href="#home" onclick="showSection('الرئيسية')">🏠 <span>الرئيسية</span></a></li>
+            <li><a href="#clients" onclick="showSection('العملاء والموردون')">👥 <span>العملاء والموردون</span></a></li>
+            <li><a href="#maintenance" onclick="showSection('بطاقات الصيانَات')">📋 <span>بطاقات الصيانَات</span></a></li>
+            <li><a href="#reminders" onclick="showSection('تذكير الصيانَات')">⏰ <span>تذكير الصيانَات</span></a></li>
+            <li><a href="#technicians" onclick="showSection('إدارة الفنيين')">👷 <span>إدارة الفنيين</span></a></li>
+            <li><a href="#store" onclick="showSection('مخزن الفنيين')">📦 <span>مخزن الفنيين</span></a></li>
+            <li><a href="#basic" onclick="showSection('البيانات الأساسية')">⚙️ <span>البيانات الأساسية</span></a></li>
+            <li><a href="#warranty" onclick="showSection('كروت الضمان')">🛡️ <span>كروت الضمان</span></a></li>
+            <li><a href="#reports" onclick="showSection('التقارير الشاملة')">📊 <span>التقارير الشاملة</span></a></li>
+            <li><a href="#users" onclick="showSection('المستخدمون والصلاحيات')">🔑 <span>المستخدمون</span></a></li>
+            <li><a href="#settings" onclick="showSection('الإعدادات الأساسية')">🛠️ <span>الإعدادات</span></a></li>
         </ul>
     </aside>
 
     <main>
         <header class="main-header">
-            <h1>لوحة القيادة الرئيسية (سحابي)</h1>
+            <h1 id="page-title">لوحة القيادة الرئيسية</h1>
             <span>أغسطس 2026</span>
         </header>
 
-        <div class="dashboard-grid">
+        <div class="dashboard-grid" id="content-area">
             <div class="card">
                 <h3>إحصائيات العمليات</h3>
-                <p>النظام يعمل بكفاءة عالية على السحابة.</p>
+                <p>النظام يعمل بكفاءة عالية على السحابة ومربوط بالكامل.</p>
             </div>
             <div class="card">
                 <h3>الحالة التشغيلية</h3>
@@ -170,6 +184,19 @@
             </div>
         </div>
     </main>
+
+    <script>
+        function showSection(sectionName) {
+            document.getElementById('page-title').innerText = sectionName;
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h3>إدارة قسم: ${sectionName}</h3>
+                    <p>أنت الآن داخل قسم ${sectionName}. جاهز لإضافة البيانات والتشغيل الفعلي.</p>
+                </div>
+            `;
+        }
+    </script>
 
 </body>
 </html>

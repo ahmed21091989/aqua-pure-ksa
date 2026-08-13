@@ -36,12 +36,13 @@
         .tab-content.active { display: block; }
         .card { background: #fff; padding: 25px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .form-control { padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; outline: none; width: 100%; margin-bottom: 10px; }
-        .btn { background: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+        .btn { background: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; text-decoration: none; }
         .btn:hover { background: var(--primary-dark); }
         .btn-success { background: var(--success); }
         .btn-danger { background: var(--danger); }
         .btn-warning { background: var(--warning); }
         .btn-secondary { background: #64748b; }
+        .btn-whatsapp { background: #25d366 !important; color: #fff !important; }
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem; border: 1px solid var(--border-color); }
         th, td { padding: 12px 15px; border: 1px solid var(--border-color); }
@@ -151,7 +152,7 @@
                         </div>
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>الكود</th><th>النوع</th><th>اسم العميل</th><th>الجوال</th><th>المنطقة/العنوان</th><th>الفني</th><th>القيمة (SAR)</th><th>التاريخ</th></tr></thead>
+                                <thead><tr><th>الكود</th><th>النوع</th><th>اسم العميل</th><th>الجوال</th><th>المنطقة/العنوان</th><th>الفني</th><th>القيمة (SAR)</th><th>التاريخ</th><th style="text-align:center;">إجراء</th></tr></thead>
                                 <tbody id="home-clients-table-body"></tbody>
                             </table>
                         </div>
@@ -200,7 +201,7 @@
                     <div class="card" style="padding: 0;">
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>المنطقة / العنوان</th><th>الفني</th><th>آخر صيانة</th><th>المُحصّل (SAR)</th><th>القادم</th><th style="text-align:center;">الإجراء</th></tr></thead>
+                                <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>المنطقة / العنوان</th><th>الفني</th><th>آخر صيانة</th><th>صيانة (SAR)</th><th>القادم</th><th style="text-align:center;">الإجراء</th></tr></thead>
                                 <tbody id="maintenance-cards-body"></tbody>
                             </table>
                         </div>
@@ -353,7 +354,7 @@
                                 <h3 style="padding:15px; border-bottom:1px solid #cbd5e1; margin:0; color:var(--danger);">🔴 صيانات متأخرة (شاملة)</h3>
                                 <div class="table-responsive">
                                     <table>
-                                        <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>الفني</th><th>الموعد</th></tr></thead>
+                                        <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>الفني</th><th>الموعد</th><th>المبلغ (SAR)</th></tr></thead>
                                         <tbody id="rep-overdue-tbody"></tbody>
                                     </table>
                                 </div>
@@ -362,7 +363,7 @@
                                 <h3 style="padding:15px; border-bottom:1px solid #cbd5e1; margin:0; color:var(--success);">🟢 صيانات قادمة (شاملة)</h3>
                                 <div class="table-responsive">
                                     <table>
-                                        <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>الفني</th><th>الموعد</th></tr></thead>
+                                        <thead><tr><th>الكود</th><th>العميل</th><th>الجوال</th><th>الفني</th><th>الموعد</th><th>المبلغ (SAR)</th></tr></thead>
                                         <tbody id="rep-upcoming-tbody"></tbody>
                                     </table>
                                 </div>
@@ -634,6 +635,23 @@
         let sysSettings = JSON.parse(localStorage.getItem('aqua_pure_sys_settings_db')) || { nameAr: "اقوى بيور كي اس ايه", nameEn: "Aqua Pure KSA", cr: "", tax: "", unifiedNumber: "", phone1: "", phone2: "", address: "", logoBase64: "" };
         let currentModalMode = 'device';
 
+        // Check login on load from localStorage
+        window.addEventListener('load', () => {
+            let loggedIn = localStorage.getItem('logged_in');
+            let currentUserName = localStorage.getItem('current_user_name');
+            let currentUserPerms = JSON.parse(localStorage.getItem('current_user_perms') || JSON.stringify(defaultPerms));
+            
+            if(loggedIn === 'true' && currentUserName) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'flex';
+                applyPermissions(currentUserPerms);
+                document.getElementById('current-user-display').innerText = "المستخدم: " + currentUserName;
+                loadSystemSettingsUI(); 
+                populateDynamicDropdowns(); 
+                switchTab('home', document.querySelector('.nav-links li[data-target="home"]'));
+            }
+        });
+
         // Auto Backup Logic (12:00 AM)
         function checkAutoBackup() {
             let today = new Date().toISOString().split('T')[0];
@@ -646,10 +664,6 @@
             }
         }
         setInterval(checkAutoBackup, 60000);
-        window.addEventListener('load', () => { 
-            let today = new Date().toISOString().split('T')[0];
-            if(localStorage.getItem('last_auto_backup') !== today && new Date().getHours() === 0) { createLocalServerBackup(false); localStorage.setItem('last_auto_backup', today); }
-        });
 
         function toggleMobileMenu() {
             let aside = document.getElementById('sidebar-menu');
@@ -668,9 +682,9 @@
 
             if(validUser) {
                 if(validUser.status === 'inactive') return alert('الحساب موقوف من قبل الإدارة.');
-                sessionStorage.setItem('logged_in', 'true');
-                sessionStorage.setItem('current_user_name', validUser.user);
-                sessionStorage.setItem('current_user_perms', JSON.stringify(validUser.perms));
+                localStorage.setItem('logged_in', 'true');
+                localStorage.setItem('current_user_name', validUser.user);
+                localStorage.setItem('current_user_perms', JSON.stringify(validUser.perms));
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('main-app').style.display = 'flex';
                 applyPermissions(validUser.perms || defaultPerms);
@@ -679,10 +693,10 @@
             } else { alert('بيانات الدخول خاطئة!'); }
         }
 
-        function logout() { if(confirm('هل تريد تسجيل الخروج؟')) { sessionStorage.clear(); window.location.reload(); } }
+        function logout() { if(confirm('هل تريد تسجيل الخروج؟')) { localStorage.removeItem('logged_in'); localStorage.removeItem('current_user_name'); localStorage.removeItem('current_user_perms'); window.location.reload(); } }
 
         function applyPermissions(perms) {
-            let isAdmin = sessionStorage.getItem('current_user_name') === 'Admin';
+            let isAdmin = localStorage.getItem('current_user_name') === 'Admin';
             document.querySelectorAll('#sidebar-nav-links li').forEach(link => {
                 let target = link.getAttribute('data-target');
                 if(!target) return;
@@ -697,7 +711,6 @@
             document.getElementById(tabId).classList.add('active');
             if(element) element.classList.add('active'); else { let t = document.querySelector(`.nav-links li[data-target="${tabId}"]`); if(t) t.classList.add('active'); }
             
-            // Close mobile menu if open
             if(window.innerWidth <= 768) { document.getElementById('sidebar-menu').classList.remove('open'); document.getElementById('mobile-overlay').classList.remove('open'); }
 
             if(tabId === 'home') loadHomeStatsAndChart();
@@ -709,7 +722,6 @@
             if(tabId === 'basic-data') renderBasicDataTables();
             if(tabId === 'warranty-cards') renderWarrantyList();
             if(tabId === 'qr-invoices') renderInvoicesList();
-            if(tabId === 'users-permissions') renderUsersList();
             if(tabId === 'reports') loadReportsData();
             if(tabId === 'backup-restore') loadBackupStats();
         }
@@ -777,10 +789,12 @@
                 let matchSearch = (!search || (String(c.code||'').includes(search)) || (String(c.phone||'').includes(search)) || (String(c.phone2||'').includes(search)) || (String(c.address||'').toLowerCase().includes(search)) || (String(c.region||'').toLowerCase().includes(search)));
                 if(matchSearch && html.split('<tr>').length <= 10) { 
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`;
-                    html += `<tr><td>${c.code}</td><td>${c.type||'عميل'}</td><td>${c.name}</td><td>${c.phone}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue||0}</td><td>${c.installDate||'-'}</td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لتعاملكم معنا في (اقوى بيور كي اس ايه). تفاصيل حسابكم: الأجهزة (${c.devicesSummary || 'لا توجد'}) كود الحساب (${c.code}). نتشرف بخدمتكم دائماً.`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    html += `<tr><td>${c.code}</td><td>${c.type||'عميل'}</td><td>${c.name}</td><td>${c.phone}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue||0}</td><td>${c.installDate||'-'}</td><td style="text-align:center;">${waBtn}</td></tr>`;
                 }
             });
-            if(document.getElementById('home-clients-table-body')) document.getElementById('home-clients-table-body').innerHTML = html || '<tr><td colspan="8" style="text-align:center;">لا توجد بيانات</td></tr>';
+            if(document.getElementById('home-clients-table-body')) document.getElementById('home-clients-table-body').innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
             
             let ctx = document.getElementById('mainRevenueChart');
             if(ctx) { if(chartInstance) chartInstance.destroy(); chartInstance = new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: chartLabels, datasets: [{ label: 'المبيعات', data: chartValues, backgroundColor: '#0284c7' }] }, options: { responsive: true, maintainAspectRatio: false } }); }
@@ -848,7 +862,9 @@
                 if((!s || (String(c.name||'').toLowerCase().includes(s)) || (String(c.code||'').includes(s)) || (String(c.phone||'').includes(s)) || (String(c.phone2||'').includes(s)) || (String(c.address||'').toLowerCase().includes(s))) && (tech === 'all' || c.tech === tech) && (reg === 'all' || c.region === reg) && (typeF === 'all' || c.type === typeF)) {
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`; if(c.gps) regionHTML += `<br><a href="${c.gps}" target="_blank" style="font-size:0.75rem; color:var(--primary-color); text-decoration:none;">📍 الموقع</a>`;
                     let maintCount = c.nextMaint ? 1 : 0; 
-                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.type||'عميل'}</td><td>${c.phone}${c.phone2?' / '+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.installDate}</td><td style="font-weight:bold; color:var(--primary-dark);">${maintCount}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="openEditCustomer('${c.code}')">تعديل</button> <button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لانضمامكم إلى (اقوى بيور كي اس ايه). تفاصيل حسابكم: كود العميل (${c.code}) والأجهزة المسجلة (${c.devicesSummary || 'لا توجد أجهزة'}). نتشرف بخدمتكم.`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.type||'عميل'}</td><td>${c.phone}${c.phone2?' / '+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.installDate}</td><td style="font-weight:bold; color:var(--primary-dark);">${maintCount}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="openEditCustomer('${c.code}')">تعديل</button>${waBtn}<button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                 }
             });
             document.getElementById('customers-table-body').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
@@ -862,7 +878,9 @@
             clients.forEach(c => {
                 if((!s || (String(c.name||'').toLowerCase().includes(s)) || (String(c.code||'').includes(s)) || (String(c.phone||'').includes(s)) || (String(c.phone2||'').includes(s))) && (tech === 'all' || c.tech === tech) && (reg === 'all' || c.region === reg)) {
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`; if(c.gps) regionHTML += `<br><a href="${c.gps}" target="_blank" style="font-size:0.75rem; color:var(--primary-color); text-decoration:none;">📍 الموقع</a>`;
-                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.lastMaint||c.installDate||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.lastMaintValue ? c.lastMaintValue + ' SAR' : '-'}</td><td><span style="color:var(--primary-dark); font-weight:bold;">${c.nextMaint||'موقوفة'}</span></td><td style="text-align:center;"><button class="btn btn-warning" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button></td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود إعلامكم بزيارة الصيانة الخاصة بكم. مبلغ الصيانة المستحق: ${c.lastMaintValue || 0} SAR. شكراً لثقتكم بـ (اقوى بيور كي اس ايه).`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.lastMaint||c.installDate||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.lastMaintValue ? c.lastMaintValue + ' SAR' : '-'}</td><td><span style="color:var(--primary-dark); font-weight:bold;">${c.nextMaint||'موقوفة'}</span></td><td style="text-align:center;"><div class="action-btns"><button class="btn btn-warning" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button>${waBtn}</div></td></tr>`;
                 }
             });
             document.getElementById('maintenance-cards-body').innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بطاقات صيانة</td></tr>';
@@ -904,7 +922,9 @@
 
                 if(matchSearch && matchTech && matchReg && matchDate) {
                     let st = getMaintenanceStatus(c.nextMaint);
-                    let row = `<tr><td><input type="checkbox" class="rem-chk" value="${c.code}"></td><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td><td><span style="background:${st.color}; color:#fff; padding:3px 8px; border-radius:4px;">${st.text}</span></td><td><div class="action-btns"><button class="btn btn-warning" style="padding:4px 8px;" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button><button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود تذكيركم بموعد صيانة الأجهزة لديكم بتاريخ ${c.nextMaint}. شركة (اقوى بيور كي اس ايه).`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let row = `<tr><td><input type="checkbox" class="rem-chk" value="${c.code}"></td><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td><td><span style="background:${st.color}; color:#fff; padding:3px 8px; border-radius:4px;">${st.text}</span></td><td><div class="action-btns"><button class="btn btn-warning" style="padding:4px 8px;" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button>${waBtn}<button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                     if(st.t === 'overdue') htmlO += row; else if(st.t === 'near') htmlN += row; else htmlU += row;
                 }
             });
@@ -926,7 +946,7 @@
             if(!tableElement) return;
             let tableHTML = tableElement.outerHTML;
             if(tableHTML.includes('لا يوجد')) { alert('لا توجد بيانات للطباعة.'); return; }
-            let cName = sysSettings.nameAr || 'Aqua Pure KSA';
+            let cName = sysSettings.nameAr || 'اقوى بيور كي اس ايه';
             let win = window.open('', '_blank');
             win.document.write(`<html lang="ar" dir="rtl"><head><title>${titleText}</title><style>body{font-family:'Cairo',sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #ccc; padding:8px; text-align:right;} th:first-child, td:first-child {display:none;} th:last-child, td:last-child {display:none;}</style></head><body><h2 style="text-align:center;">${cName} - ${titleText}</h2>${tableHTML}<script>window.onload=function(){window.print();}<\/script></body></html>`);
             win.document.close();
@@ -965,14 +985,14 @@
                     html += `<tr><td>${c.code||'-'}</td><td><strong>${c.name||'-'}</strong></td><td>${c.phone||'-'}${c.phone2?' / '+c.phone2:''}</td><td>${c.region||'-'}</td><td>${c.tech||'-'}</td><td>${c.installDate||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue||0} SAR</td></tr>`; 
                     if(c.nextMaint) {
                         let st = getMaintenanceStatus(c.nextMaint);
-                        if(st.t === 'overdue') htmlOverdue += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td></tr>`;
-                        if(st.t === 'upcoming' || st.t === 'near') htmlUpcoming += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td></tr>`;
+                        if(st.t === 'overdue') htmlOverdue += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td><td style="color:var(--success); font-weight:bold;">${c.lastMaintValue || 0} SAR</td></tr>`;
+                        if(st.t === 'upcoming' || st.t === 'near') htmlUpcoming += `<tr><td>${c.code}</td><td>${c.name}</td><td>${c.phone}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td><td style="color:var(--success); font-weight:bold;">${c.lastMaintValue || 0} SAR</td></tr>`;
                     }
                 });
                 
                 document.getElementById('rep-detailed-tbody').innerHTML = html || `<tr><td colspan="7" style="text-align:center; padding:15px;">لا توجد بيانات مطابقة.</td></tr>`;
-                document.getElementById('rep-overdue-tbody').innerHTML = htmlOverdue || `<tr><td colspan="5" style="text-align:center;">لا يوجد</td></tr>`;
-                document.getElementById('rep-upcoming-tbody').innerHTML = htmlUpcoming || `<tr><td colspan="5" style="text-align:center;">لا يوجد</td></tr>`;
+                document.getElementById('rep-overdue-tbody').innerHTML = htmlOverdue || `<tr><td colspan="6" style="text-align:center;">لا يوجد</td></tr>`;
+                document.getElementById('rep-upcoming-tbody').innerHTML = htmlUpcoming || `<tr><td colspan="6" style="text-align:center;">لا يوجد</td></tr>`;
             } catch(e) { console.error(e); }
         }
 
@@ -982,7 +1002,9 @@
             let html = '';
             clients.forEach(c => {
                 if(!searchVal || (String(c.name||'').toLowerCase().includes(searchVal)) || (String(c.code||'').includes(searchVal)) || (String(c.phone||'').includes(searchVal)) || (String(c.phone2||'').includes(searchVal))) {
-                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.customerTax||'-'}</td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue || 0}</td><td><div class="action-btns"><button class="btn btn-success" onclick="printCustomerInvoice('${c.code}')">طباعة</button><button class="btn btn-secondary" onclick="openEditCustomer('${c.code}')">فتح/تعديل</button><button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، تفاصيل فاتورتكم برقم ${c.code} بمبلغ إجمالي ${c.totalValue || 0} SAR. شركة (اقوى بيور كي اس ايه).`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.customerTax||'-'}</td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue || 0}</td><td><div class="action-btns"><button class="btn btn-success" onclick="printCustomerInvoice('${c.code}')">طباعة</button><button class="btn btn-secondary" onclick="openEditCustomer('${c.code}')">فتح/تعديل</button>${waBtn}<button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                 }
             });
             document.getElementById('invoices-table-body').innerHTML = html || `<tr><td colspan="8" style="text-align: center;">لا توجد فواتير مطابقة.</td></tr>`;
@@ -1000,7 +1022,9 @@
             let html = '';
             clients.forEach(c => {
                 if(!searchVal || (String(c.name||'').toLowerCase().includes(searchVal)) || (String(c.code||'').includes(searchVal)) || (String(c.phone||'').includes(searchVal)) || (String(c.phone2||'').includes(searchVal))) {
-                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td><span style="background:#e0f2fe; color:var(--primary-dark); padding:3px 8px; border-radius:4px; font-weight:bold;">${c.warrantyDuration || 'سنتان'}</span></td><td><div class="action-btns"><button class="btn btn-secondary" onclick="openWarrantySettings('${c.code}')">⚙️ إعدادات</button> <button class="btn btn-success" onclick="printCustomerWarranty('${c.code}')">🖨️ طباعة</button></div></td></tr>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شهادة الضمان الخاصة بكم برقم الكود ${c.code} لمدة ${c.warrantyDuration || 'سنتان'}. شركة (اقوى بيور كي اس ايه).`);
+                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td><span style="background:#e0f2fe; color:var(--primary-dark); padding:3px 8px; border-radius:4px; font-weight:bold;">${c.warrantyDuration || 'سنتان'}</span></td><td><div class="action-btns"><button class="btn btn-secondary" onclick="openWarrantySettings('${c.code}')">⚙️ إعدادات</button>${waBtn} <button class="btn btn-success" onclick="printCustomerWarranty('${c.code}')">🖨️ طباعة</button></div></td></tr>`;
                 }
             });
             document.getElementById('warranty-table-body').innerHTML = html || `<tr><td colspan="7" style="text-align: center;">لا توجد بيانات.</td></tr>`;
@@ -1115,8 +1139,13 @@
             let html=''; let techs = getDB('aqua_pure_techs_db'); let clients = getDB('aqua_pure_customers_db');
             techs.forEach((t,i) => {
                 let custCount = 0; let cardCount = 0;
+                let techMovements = getDB('aqua_pure_store_db').filter(s => s.tech === t.name);
+                let itemsSummary = techMovements.map(m => `${m.item} (${m.qty})`).join(', ');
+                let waText = encodeURIComponent(`مرحباً ${t.name}، تفاصيل حركات مخزن الفني لديكم: ${itemsSummary || 'لا توجد حركات حالية'}. شركة (اقوى بيور كي اس ايه).`);
+                let waBtn = `<a href="https://api.whatsapp.com/send?phone=${t.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                
                 clients.forEach(c => { if(c.tech === t.name) { custCount++; if(c.nextMaint) cardCount++; } });
-                html+=`<tr><td>${t.name}</td><td>${t.phone||'-'}</td><td style="font-weight:bold;">${custCount}</td><td style="font-weight:bold; color:var(--primary-dark);">${cardCount}</td><td>${t.status||'نشط'}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="editTechnician(${i})">تعديل</button> <button class="btn btn-secondary" onclick="toggleTechStatus(${i})">إيقاف/تنشيط</button> <button class="btn btn-danger" onclick="deleteTechnician(${i})">حذف</button></div></td></tr>`;
+                html+=`<tr><td>${t.name}</td><td>${t.phone||'-'}</td><td style="font-weight:bold;">${custCount}</td><td style="font-weight:bold; color:var(--primary-dark);">${cardCount}</td><td>${t.status||'نشط'}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="editTechnician(${i})">تعديل</button>${waBtn}<button class="btn btn-secondary" onclick="toggleTechStatus(${i})">إيقاف/تنشيط</button> <button class="btn btn-danger" onclick="deleteTechnician(${i})">حذف</button></div></td></tr>`;
             }); 
             document.getElementById('technicians-table-body').innerHTML = html||'<tr><td colspan="6" style="text-align:center;">لا يوجد</td></tr>'; 
         }
@@ -1129,7 +1158,13 @@
         function renderTechStoreList() { 
             let html=''; let mHtml=''; 
             getDB('aqua_pure_store_db').forEach((s,i) => {
-                if(s.type==='صرف' || s.type==='إرجاع' || s.type==='تنزيل') mHtml+=`<tr><td>${s.tech}</td><td><span style="background:#f1f5f9; padding:2px 5px; border-radius:3px;">${s.type}</span></td><td>${s.item}</td><td>${s.qty}</td><td>${s.date}</td><td><div class="action-btns"><button class="btn btn-secondary" style="padding:2px 5px;" onclick="alert('تفاصيل:\\nالفني: ${s.tech}\\nالمنتج: ${s.item}\\nالكمية: ${s.qty}\\nالتاريخ: ${s.date}')">فتح</button> <button class="btn btn-success" style="padding:2px 5px;" onclick="window.print()">طباعة</button> <button class="btn btn-danger" style="padding:2px 5px;" onclick="deleteStoreItem(${s.id})">حذف</button></div></td></tr>`;
+                if(s.type==='صرف' || s.type==='إرجاع' || s.type==='تنزيل') {
+                    let techObj = getDB('aqua_pure_techs_db').find(t => t.name === s.tech);
+                    let techPhone = techObj ? techObj.phone : '';
+                    let waText = encodeURIComponent(`مرحباً ${s.tech}، تفاصيل حركة المخزن: ${s.type} - ${s.item} (الكمية: ${s.qty}) بتاريخ ${s.date}. (اقوى بيور كي اس ايه).`);
+                    let waBtn = techPhone ? `<a href="https://api.whatsapp.com/send?phone=${techPhone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:2px 5px;">واتساب</a>` : '';
+                    mHtml+=`<tr><td>${s.tech}</td><td><span style="background:#f1f5f9; padding:2px 5px; border-radius:3px;">${s.type}</span></td><td>${s.item}</td><td>${s.qty}</td><td>${s.date}</td><td><div class="action-btns"><button class="btn btn-secondary" style="padding:2px 5px;" onclick="alert('تفاصيل:\\nالفني: ${s.tech}\\nالمنتج: ${s.item}\\nالكمية: ${s.qty}\\nالتاريخ: ${s.date}')">فتح</button> <button class="btn btn-success" style="padding:2px 5px;" onclick="window.print()">طباعة</button>${waBtn} <button class="btn btn-danger" style="padding:2px 5px;" onclick="deleteStoreItem(${s.id})">حذف</button></div></td></tr>`;
+                }
             });
             let summary = {};
             getDB('aqua_pure_store_db').forEach(s => {

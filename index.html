@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aqua Pure KSA - النظام السحابي المتكامل</title>
+    <title>Pure Aqua KSA - النظام السحابي المتكامل</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -72,7 +72,7 @@
     <div id="login-screen">
         <div class="login-box">
             <img id="login-logo-img" src="" alt="Logo">
-            <h2 id="login-title">Aqua Pure KSA</h2>
+            <h2 id="login-title">Pure Aqua KSA</h2>
             <p style="color: #64748b; margin-top: -15px; margin-bottom: 25px;">تسجيل الدخول للنظام السحابي</p>
             <form onsubmit="handleLogin(event)">
                 <input type="text" id="login-username" class="form-control" placeholder="اسم المستخدم (admin)" required style="padding: 12px; font-size: 1rem; text-align: center; direction: ltr;">
@@ -88,7 +88,7 @@
         <aside id="sidebar-menu">
             <div class="brand">
                 <img id="sidebar-logo" src="" alt="Logo">
-                <h2 id="sidebar-company-name">اقوى بيور كي اس ايه<br><span style="font-size:0.85rem; color:#bae6fd;">Aqua Pure KSA</span></h2>
+                <h2 id="sidebar-company-name">بيور اكوا السعودية<br><span style="font-size:0.85rem; color:#bae6fd;">Pure Aqua KSA</span></h2>
                 <p style="font-size: 0.75rem; color: #7dd3fc; margin-top: 5px;">النظام المتكامل</p>
             </div>
             <ul class="nav-links" id="sidebar-nav-links">
@@ -256,7 +256,7 @@
                     <div class="card" style="padding: 0;">
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>الفني</th><th>المنتج / السبب</th><th>الكمية المتبقية</th></tr></thead>
+                                <thead><tr><th>الفني</th><th>المنتج / السبب</th><th>الكمية المتبقية</th><th style="text-align:center;">إجراء</th></tr></thead>
                                 <tbody id="tech-store-table-body"></tbody>
                             </table>
                         </div>
@@ -618,6 +618,59 @@
 
     <!-- السكريبت القوي المحمي -->
     <script>
+        // دالة لتظبيط رقم الجوال وإضافة مفتاح السعودية
+        function formatPhone(phone) {
+            if(!phone) return '';
+            let p = phone.toString().trim();
+            if(p.startsWith('0')) return '966' + p.substring(1);
+            if(!p.startsWith('966') && p.length === 9) return '966' + p;
+            return p;
+        }
+
+        // دالة الإرسال الجماعي للواتساب (تم التعديل لتعمل بشكل فوري)
+        function sendBulkWhatsApp() {
+            let checked = document.querySelectorAll('.rem-chk:checked');
+            if(checked.length === 0) return alert('الرجاء تحديد عميل واحد على الأقل من القائمة.');
+            
+            if(!confirm(`سيتم فتح ${checked.length} محادثة واتساب الآن.\n\n⚠️ هام جداً: المتصفح قد يمنع فتح النوافذ المتعددة. يرجى النقر على علامة (❌) في شريط العنوان أعلى المتصفح واختيار (السماح دائماً بالنوافذ المنبثقة Pop-ups) لكي يتم الإرسال.`)) return;
+
+            let clients = getDB('aqua_pure_customers_db');
+            
+            checked.forEach((chk) => {
+                let code = chk.value;
+                let c = clients.find(x => String(x.code) === String(code));
+                if(c && c.phone) {
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود تذكيركم بموعد صيانة الأجهزة لديكم بتاريخ ${c.nextMaint}. شركة (بيور اكوا السعودية).`);
+                    let url = `https://wa.me/${formatPhone(c.phone)}?text=${waText}`;
+                    window.open(url, '_blank');
+                }
+            });
+        }
+        
+        // دالة إرسال جرد العهدة للفني على الواتساب
+        function sendTechStoreSummary(techName) {
+            let techObj = getDB('aqua_pure_techs_db').find(t => t.name === techName);
+            if(!techObj || !techObj.phone) return alert('لا يوجد رقم جوال مسجل لهذا الفني.');
+            
+            let summary = {};
+            getDB('aqua_pure_store_db').forEach(s => {
+                if(s.tech === techName) {
+                    if(!summary[s.item]) summary[s.item] = 0;
+                    if(s.type === 'صرف') summary[s.item] += s.qty;
+                    if(s.type === 'إرجاع' || s.type === 'تنزيل') summary[s.item] -= s.qty;
+                }
+            });
+            
+            let items = [];
+            for(let item in summary) {
+                if(summary[item] > 0) items.push(`${item} (${summary[item]})`);
+            }
+            
+            let waText = encodeURIComponent(`مرحباً ${techName}،\nتفاصيل العهدة الحالية لديك من المخزن:\n${items.length > 0 ? items.join('\\n') : 'لا يوجد عهدة'}\n\nشركة (بيور اكوا السعودية).`);
+            let url = `https://wa.me/${formatPhone(techObj.phone)}?text=${waText}`;
+            window.open(url, '_blank');
+        }
+
         function getDB(key) { try { let data = JSON.parse(localStorage.getItem(key)); return Array.isArray(data) ? data.filter(i => i) : []; } catch(e) { return []; } }
         function setDB(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
@@ -632,7 +685,7 @@
         let defaultPerms = ["الرئيسية", "العملاء والموردون", "بطاقات الصيانات", "تذكير الصيانات", "إدارة الفنيين", "مخزن الفنيين", "البيانات الأساسية", "كروت الضمان", "فواتير QR", "التقارير الشاملة", "الإعدادات الأساسية", "النسخة الاحتياطية", "المستخدمون والصلاحيات"];
         if(getDB('aqua_pure_users_db').length === 0) setDB('aqua_pure_users_db', [{ user: "Admin", pass: "1234", perms: defaultPerms, status: "active" }]);
         
-        let sysSettings = JSON.parse(localStorage.getItem('aqua_pure_sys_settings_db')) || { nameAr: "اقوى بيور كي اس ايه", nameEn: "Aqua Pure KSA", cr: "", tax: "", unifiedNumber: "", phone1: "", phone2: "", address: "", logoBase64: "" };
+        let sysSettings = JSON.parse(localStorage.getItem('aqua_pure_sys_settings_db')) || { nameAr: "بيور اكوا السعودية", nameEn: "Pure Aqua KSA", cr: "", tax: "", unifiedNumber: "", phone1: "", phone2: "", address: "", logoBase64: "" };
         let currentModalMode = 'device';
 
         // Check login on load from localStorage
@@ -727,8 +780,8 @@
         }
 
         function loadSystemSettingsUI() {
-            let nAr = sysSettings.nameAr || "اقوى بيور كي اس ايه";
-            let nEn = sysSettings.nameEn || "Aqua Pure KSA";
+            let nAr = sysSettings.nameAr || "بيور اكوا السعودية";
+            let nEn = sysSettings.nameEn || "Pure Aqua KSA";
             document.getElementById('sidebar-company-name').innerHTML = `${nAr}<br><span style="font-size:0.85rem; color:#bae6fd;">${nEn}</span>`;
             document.getElementById('header-phone').innerText = "الدعم: " + (sysSettings.phone1 || "");
             if(sysSettings.logoBase64) { document.getElementById('sidebar-logo').src = sysSettings.logoBase64; document.getElementById('sidebar-logo').style.display = 'block'; }
@@ -789,8 +842,8 @@
                 let matchSearch = (!search || (String(c.code||'').includes(search)) || (String(c.phone||'').includes(search)) || (String(c.phone2||'').includes(search)) || (String(c.address||'').toLowerCase().includes(search)) || (String(c.region||'').toLowerCase().includes(search)));
                 if(matchSearch && html.split('<tr>').length <= 10) { 
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`;
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لتعاملكم معنا في (اقوى بيور كي اس ايه). تفاصيل حسابكم: الأجهزة (${c.devicesSummary || 'لا توجد'}) كود الحساب (${c.code}). نتشرف بخدمتكم دائماً.`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لتعاملكم معنا في (بيور اكوا السعودية). تفاصيل حسابكم: الأجهزة (${c.devicesSummary || 'لا توجد'}) كود الحساب (${c.code}). نتشرف بخدمتكم دائماً.`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     html += `<tr><td>${c.code}</td><td>${c.type||'عميل'}</td><td>${c.name}</td><td>${c.phone}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue||0}</td><td>${c.installDate||'-'}</td><td style="text-align:center;">${waBtn}</td></tr>`;
                 }
             });
@@ -862,8 +915,8 @@
                 if((!s || (String(c.name||'').toLowerCase().includes(s)) || (String(c.code||'').includes(s)) || (String(c.phone||'').includes(s)) || (String(c.phone2||'').includes(s)) || (String(c.address||'').toLowerCase().includes(s))) && (tech === 'all' || c.tech === tech) && (reg === 'all' || c.region === reg) && (typeF === 'all' || c.type === typeF)) {
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`; if(c.gps) regionHTML += `<br><a href="${c.gps}" target="_blank" style="font-size:0.75rem; color:var(--primary-color); text-decoration:none;">📍 الموقع</a>`;
                     let maintCount = c.nextMaint ? 1 : 0; 
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لانضمامكم إلى (اقوى بيور كي اس ايه). تفاصيل حسابكم: كود العميل (${c.code}) والأجهزة المسجلة (${c.devicesSummary || 'لا توجد أجهزة'}). نتشرف بخدمتكم.`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شكراً لانضمامكم إلى (بيور اكوا السعودية). تفاصيل حسابكم: كود العميل (${c.code}) والأجهزة المسجلة (${c.devicesSummary || 'لا توجد أجهزة'}). نتشرف بخدمتكم.`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.type||'عميل'}</td><td>${c.phone}${c.phone2?' / '+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.installDate}</td><td style="font-weight:bold; color:var(--primary-dark);">${maintCount}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="openEditCustomer('${c.code}')">تعديل</button>${waBtn}<button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                 }
             });
@@ -878,8 +931,8 @@
             clients.forEach(c => {
                 if((!s || (String(c.name||'').toLowerCase().includes(s)) || (String(c.code||'').includes(s)) || (String(c.phone||'').includes(s)) || (String(c.phone2||'').includes(s))) && (tech === 'all' || c.tech === tech) && (reg === 'all' || c.region === reg)) {
                     let regionHTML = c.region || '-'; if(c.address) regionHTML += `<br><span style="font-size:0.75rem; color:#64748b;">${c.address}</span>`; if(c.gps) regionHTML += `<br><a href="${c.gps}" target="_blank" style="font-size:0.75rem; color:var(--primary-color); text-decoration:none;">📍 الموقع</a>`;
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود إعلامكم بزيارة الصيانة الخاصة بكم. مبلغ الصيانة المستحق: ${c.lastMaintValue || 0} SAR. شكراً لثقتكم بـ (اقوى بيور كي اس ايه).`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود إعلامكم بزيارة الصيانة الخاصة بكم. مبلغ الصيانة المستحق: ${c.lastMaintValue || 0} SAR. شكراً لثقتكم بـ (بيور اكوا السعودية).`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${regionHTML}</td><td>${c.tech||'-'}</td><td>${c.lastMaint||c.installDate||'-'}</td><td style="color:var(--success); font-weight:bold;">${c.lastMaintValue ? c.lastMaintValue + ' SAR' : '-'}</td><td><span style="color:var(--primary-dark); font-weight:bold;">${c.nextMaint||'موقوفة'}</span></td><td style="text-align:center;"><div class="action-btns"><button class="btn btn-warning" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button>${waBtn}</div></td></tr>`;
                 }
             });
@@ -922,14 +975,19 @@
 
                 if(matchSearch && matchTech && matchReg && matchDate) {
                     let st = getMaintenanceStatus(c.nextMaint);
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود تذكيركم بموعد صيانة الأجهزة لديكم بتاريخ ${c.nextMaint}. شركة (اقوى بيور كي اس ايه).`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، نود تذكيركم بموعد صيانة الأجهزة لديكم بتاريخ ${c.nextMaint}. شركة (بيور اكوا السعودية).`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     let row = `<tr><td><input type="checkbox" class="rem-chk" value="${c.code}"></td><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region||'-'}</td><td>${c.devicesSummary||'-'}</td><td>${c.tech||'-'}</td><td>${c.nextMaint}</td><td><span style="background:${st.color}; color:#fff; padding:3px 8px; border-radius:4px;">${st.text}</span></td><td><div class="action-btns"><button class="btn btn-warning" style="padding:4px 8px;" onclick="openMaintenanceCardByCode('${c.code}')">تحديث</button>${waBtn}<button class="btn btn-danger" style="padding:4px 8px;" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                     if(st.t === 'overdue') htmlO += row; else if(st.t === 'near') htmlN += row; else htmlU += row;
                 }
             });
 
             document.getElementById('reminders-sections').innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; background: #e0f2fe; padding: 10px; border-radius: 8px; border: 1px solid #bae6fd;">
+                    <h3 style="color:#0369a1; margin:0;">🚀 إرسال واتساب جماعي</h3>
+                    <button class="btn btn-whatsapp" style="font-size: 1.1rem; padding: 8px 20px;" onclick="sendBulkWhatsApp()">📲 إرسال للمحددين (تحديد الكل أو جزء)</button>
+                </div>
+
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;"><h3 style="color:var(--danger); margin:0;">🔴 متأخرة</h3><button class="btn btn-secondary" style="padding:4px 10px;" onclick="printReminderTable('reminders-overdue-table', 'صيانات متأخرة')">🖨️ طباعة المتأخرة</button></div>
                 <div class="card table-responsive" style="padding:0; margin-bottom:20px;"><table id="reminders-overdue-table" style="margin-bottom:0;"><thead style="background:#fef2f2;"><tr><th><input type="checkbox" onclick="toggleAllReminders(this, 'reminders-overdue-table')"> الكل</th><th>الكود</th><th>العميل</th><th>الموبايل</th><th>المنطقة</th><th>الجهاز</th><th>الفني</th><th>الموعد</th><th>الحالة</th><th style="text-align:center;">إجراء</th></tr></thead><tbody>${htmlO||'<tr><td colspan="10" style="text-align:center;">لا يوجد</td></tr>'}</tbody></table></div>
                 
@@ -946,7 +1004,7 @@
             if(!tableElement) return;
             let tableHTML = tableElement.outerHTML;
             if(tableHTML.includes('لا يوجد')) { alert('لا توجد بيانات للطباعة.'); return; }
-            let cName = sysSettings.nameAr || 'اقوى بيور كي اس ايه';
+            let cName = sysSettings.nameAr || 'بيور اكوا السعودية';
             let win = window.open('', '_blank');
             win.document.write(`<html lang="ar" dir="rtl"><head><title>${titleText}</title><style>body{font-family:'Cairo',sans-serif; padding:20px;} table{width:100%; border-collapse:collapse;} th,td{border:1px solid #ccc; padding:8px; text-align:right;} th:first-child, td:first-child {display:none;} th:last-child, td:last-child {display:none;}</style></head><body><h2 style="text-align:center;">${cName} - ${titleText}</h2>${tableHTML}<script>window.onload=function(){window.print();}<\/script></body></html>`);
             win.document.close();
@@ -1002,8 +1060,8 @@
             let html = '';
             clients.forEach(c => {
                 if(!searchVal || (String(c.name||'').toLowerCase().includes(searchVal)) || (String(c.code||'').includes(searchVal)) || (String(c.phone||'').includes(searchVal)) || (String(c.phone2||'').includes(searchVal))) {
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، تفاصيل فاتورتكم برقم ${c.code} بمبلغ إجمالي ${c.totalValue || 0} SAR. شركة (اقوى بيور كي اس ايه).`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، تفاصيل فاتورتكم برقم ${c.code} بمبلغ إجمالي ${c.totalValue || 0} SAR. شركة (بيور اكوا السعودية).`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.customerTax||'-'}</td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td style="color:var(--success); font-weight:bold;">${c.totalValue || 0}</td><td><div class="action-btns"><button class="btn btn-success" onclick="printCustomerInvoice('${c.code}')">طباعة</button><button class="btn btn-secondary" onclick="openEditCustomer('${c.code}')">فتح/تعديل</button>${waBtn}<button class="btn btn-danger" onclick="deleteClientByCode('${c.code}')">حذف</button></div></td></tr>`;
                 }
             });
@@ -1022,8 +1080,8 @@
             let html = '';
             clients.forEach(c => {
                 if(!searchVal || (String(c.name||'').toLowerCase().includes(searchVal)) || (String(c.code||'').includes(searchVal)) || (String(c.phone||'').includes(searchVal)) || (String(c.phone2||'').includes(searchVal))) {
-                    let waText = encodeURIComponent(`مرحباً ${c.name}، شهادة الضمان الخاصة بكم برقم الكود ${c.code} لمدة ${c.warrantyDuration || 'سنتان'}. شركة (اقوى بيور كي اس ايه).`);
-                    let waBtn = `<a href="https://api.whatsapp.com/send?phone=${c.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                    let waText = encodeURIComponent(`مرحباً ${c.name}، شهادة الضمان الخاصة بكم برقم الكود ${c.code} لمدة ${c.warrantyDuration || 'سنتان'}. شركة (بيور اكوا السعودية).`);
+                    let waBtn = `<a href="https://wa.me/${formatPhone(c.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                     html += `<tr><td>${c.code}</td><td><strong>${c.name}</strong></td><td>${c.phone}${c.phone2?'<br>'+c.phone2:''}</td><td>${c.region || '-'}</td><td>${c.devicesSummary || '-'}</td><td><span style="background:#e0f2fe; color:var(--primary-dark); padding:3px 8px; border-radius:4px; font-weight:bold;">${c.warrantyDuration || 'سنتان'}</span></td><td><div class="action-btns"><button class="btn btn-secondary" onclick="openWarrantySettings('${c.code}')">⚙️ إعدادات</button>${waBtn} <button class="btn btn-success" onclick="printCustomerWarranty('${c.code}')">🖨️ طباعة</button></div></td></tr>`;
                 }
             });
@@ -1032,7 +1090,7 @@
 
         function printCustomerInvoice(code) {
             let c = getDB('aqua_pure_customers_db').find(i => String(i.code) === String(code)); if(!c) return;
-            let cName = sysSettings.nameAr || 'اقوى بيور كي اس ايه'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; margin-bottom:10px; border-radius:5px;">` : ''; let custTaxHTML = c.customerTax ? `<p><strong>الرقم الضريبي للعميل:</strong> ${c.customerTax}</p>` : '';
+            let cName = sysSettings.nameAr || 'بيور اكوا السعودية'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; margin-bottom:10px; border-radius:5px;">` : ''; let custTaxHTML = c.customerTax ? `<p><strong>الرقم الضريبي للعميل:</strong> ${c.customerTax}</p>` : '';
             let win = window.open('', '_blank');
             win.document.write(`<html lang="ar" dir="rtl"><head><title>فاتورة - ${c.name}</title><style>body{font-family:'Cairo',sans-serif; padding:30px;} table{width:100%; border-collapse:collapse; margin-top:20px; font-size:0.9rem;} th,td{border:1px solid #cbd5e1; padding:10px; text-align:right;} th{background:#f1f5f9;}</style></head><body><div style="text-align:center; border-bottom:2px solid #0284c7; padding-bottom:15px; margin-bottom:20px;">${cLogo}<h2 style="color:#0369a1; margin-bottom:5px;">${cName}</h2><p style="font-size:0.9rem; color:#64748b;">هاتف: ${cPhone}${cUnified}${cCR}${cTax}</p><h3 style="margin-top:10px; background:#f1f5f9; display:inline-block; padding:5px 15px; border-radius:5px;">فاتورة ضريبية مبسطة</h3></div><div style="display:flex; justify-content:space-between; margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:6px;"><div><p><strong>العميل / الشركة:</strong> ${c.name}</p>${custTaxHTML}<p><strong>رقم الجوال:</strong> ${c.phone}${c.phone2?' / '+c.phone2:''}</p><p><strong>المنطقة:</strong> ${c.region || '-'}</p></div><div><p><strong>رقم الفاتورة:</strong> ${c.code}</p><p><strong>التاريخ:</strong> ${c.installDate || '-'}</p></div></div><table><thead><tr><th>الخدمة / الجهاز</th><th>السعر (SAR)</th></tr></thead><tbody><tr><td>${c.devicesSummary || 'تركيب وصيانة'}</td><td>${c.totalValue || 0}</td></tr></tbody></table><div style="text-align:left; font-size:1.2rem; font-weight:bold; color:#0369a1; margin-bottom:20px;">الإجمالي المستحق: ${c.totalValue || 0} SAR</div><div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:15px; color:#64748b;"><p>شكراً لاختياركم ${cName}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=AquaPure_Inv_${c.code}_${c.totalValue}SAR" style="width:120px; height:120px;"></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
             win.document.close();
@@ -1040,7 +1098,7 @@
 
         function printCustomerWarranty(code) {
             let c = getDB('aqua_pure_customers_db').find(i => String(i.code) === String(code)); if(!c) return;
-            let cName = sysSettings.nameAr || 'اقوى بيور كي اس ايه'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; border-radius:5px; margin-bottom:10px;">` : '';
+            let cName = sysSettings.nameAr || 'بيور اكوا السعودية'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; border-radius:5px; margin-bottom:10px;">` : '';
             let win = window.open('', '_blank');
             win.document.write(`<html lang="ar" dir="rtl"><head><title>ضمان - ${c.name}</title><style>body{font-family:'Cairo',sans-serif; padding:30px; text-align:center;} .box{border:2px solid #0369a1; padding:20px; border-radius:10px;} p{text-align:right; font-size:1.1rem;}</style></head><body><div class="box"><div style="text-align:center;">${cLogo}<h2 style="color:#0369a1; margin-bottom:5px;">${cName} - شهادة ضمان</h2><p style="font-size:0.85rem; color:#64748b;">${cCR}${cTax}${cUnified}</p></div><hr><p><strong>رقم الضمان (الكود):</strong> ${c.code}</p><p><strong>العميل:</strong> ${c.name}</p><p><strong>الجوال:</strong> ${c.phone} ${c.phone2 ? ' / ' + c.phone2 : ''}</p><p><strong>المنطقة:</strong> ${c.region || '-'}</p><p><strong>الأجهزة المشمولة:</strong> ${c.devicesSummary || '-'}</p><p><strong>مدة الضمان:</strong> ${c.warrantyDuration || 'سنتان'}</p><p><strong>إجمالي الفاتورة:</strong> ${c.totalValue || 0} SAR</p><hr><h4>يسري هذا الضمان وفق الشروط والأحكام.</h4><p style="font-size:0.9rem; text-align:center;">للتواصل والدعم الفني: ${cPhone}</p></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
             win.document.close();
@@ -1141,8 +1199,8 @@
                 let custCount = 0; let cardCount = 0;
                 let techMovements = getDB('aqua_pure_store_db').filter(s => s.tech === t.name);
                 let itemsSummary = techMovements.map(m => `${m.item} (${m.qty})`).join(', ');
-                let waText = encodeURIComponent(`مرحباً ${t.name}، تفاصيل حركات مخزن الفني لديكم: ${itemsSummary || 'لا توجد حركات حالية'}. شركة (اقوى بيور كي اس ايه).`);
-                let waBtn = `<a href="https://api.whatsapp.com/send?phone=${t.phone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
+                let waText = encodeURIComponent(`مرحباً ${t.name}، تفاصيل حركات مخزن الفني لديكم: ${itemsSummary || 'لا توجد حركات حالية'}. شركة (بيور اكوا السعودية).`);
+                let waBtn = `<a href="https://wa.me/${formatPhone(t.phone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:4px 8px;">واتساب</a>`;
                 
                 clients.forEach(c => { if(c.tech === t.name) { custCount++; if(c.nextMaint) cardCount++; } });
                 html+=`<tr><td>${t.name}</td><td>${t.phone||'-'}</td><td style="font-weight:bold;">${custCount}</td><td style="font-weight:bold; color:var(--primary-dark);">${cardCount}</td><td>${t.status||'نشط'}</td><td><div class="action-btns"><button class="btn btn-warning" onclick="editTechnician(${i})">تعديل</button>${waBtn}<button class="btn btn-secondary" onclick="toggleTechStatus(${i})">إيقاف/تنشيط</button> <button class="btn btn-danger" onclick="deleteTechnician(${i})">حذف</button></div></td></tr>`;
@@ -1161,8 +1219,8 @@
                 if(s.type==='صرف' || s.type==='إرجاع' || s.type==='تنزيل') {
                     let techObj = getDB('aqua_pure_techs_db').find(t => t.name === s.tech);
                     let techPhone = techObj ? techObj.phone : '';
-                    let waText = encodeURIComponent(`مرحباً ${s.tech}، تفاصيل حركة المخزن: ${s.type} - ${s.item} (الكمية: ${s.qty}) بتاريخ ${s.date}. (اقوى بيور كي اس ايه).`);
-                    let waBtn = techPhone ? `<a href="https://api.whatsapp.com/send?phone=${techPhone}&text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:2px 5px;">واتساب</a>` : '';
+                    let waText = encodeURIComponent(`مرحباً ${s.tech}، تفاصيل حركة المخزن: ${s.type} - ${s.item} (الكمية: ${s.qty}) بتاريخ ${s.date}. (بيور اكوا السعودية).`);
+                    let waBtn = techPhone ? `<a href="https://wa.me/${formatPhone(techPhone)}?text=${waText}" target="_blank" class="btn btn-whatsapp" style="padding:2px 5px;">واتساب</a>` : '';
                     mHtml+=`<tr><td>${s.tech}</td><td><span style="background:#f1f5f9; padding:2px 5px; border-radius:3px;">${s.type}</span></td><td>${s.item}</td><td>${s.qty}</td><td>${s.date}</td><td><div class="action-btns"><button class="btn btn-secondary" style="padding:2px 5px;" onclick="alert('تفاصيل:\\nالفني: ${s.tech}\\nالمنتج: ${s.item}\\nالكمية: ${s.qty}\\nالتاريخ: ${s.date}')">فتح</button> <button class="btn btn-success" style="padding:2px 5px;" onclick="window.print()">طباعة</button>${waBtn} <button class="btn btn-danger" style="padding:2px 5px;" onclick="deleteStoreItem(${s.id})">حذف</button></div></td></tr>`;
                 }
             });
@@ -1173,11 +1231,20 @@
                 if(s.type === 'صرف') summary[key].qty += s.qty;
                 if(s.type === 'إرجاع' || s.type === 'تنزيل') summary[key].qty -= s.qty;
             });
+            
+            let displayedTechs = [];
             Object.values(summary).forEach(s => {
-                if(s.qty > 0) html+=`<tr><td>${s.tech}</td><td>${s.item}</td><td style="font-weight:bold;">${s.qty}</td></tr>`;
+                if(s.qty > 0) {
+                    let waBtn = '';
+                    if(!displayedTechs.includes(s.tech)) {
+                        waBtn = `<button class="btn btn-whatsapp" style="padding:2px 8px;" onclick="sendTechStoreSummary('${s.tech}')">إرسال العهدة 📲</button>`;
+                        displayedTechs.push(s.tech);
+                    }
+                    html+=`<tr><td>${s.tech}</td><td>${s.item}</td><td style="font-weight:bold;">${s.qty}</td><td style="text-align:center;">${waBtn}</td></tr>`;
+                }
             });
             
-            document.getElementById('tech-store-table-body').innerHTML = html||'<tr><td colspan="3" style="text-align:center;">لا يوجد منتجات مع الفنيين</td></tr>'; 
+            document.getElementById('tech-store-table-body').innerHTML = html||'<tr><td colspan="4" style="text-align:center;">لا يوجد منتجات مع الفنيين</td></tr>'; 
             document.getElementById('tech-movements-tbody').innerHTML = mHtml||'<tr><td colspan="6" style="text-align:center;">لا توجد حركات</td></tr>'; 
         }
         

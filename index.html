@@ -49,11 +49,11 @@
         .btn-secondary { background: #64748b; }
         .btn-whatsapp { background: #25d366 !important; color: #fff !important; }
         .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem; border: 1px solid var(--border-color); }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem; border: 1px solid var(--border-color); white-space: nowrap; }
         th, td { padding: 12px 15px; border: 1px solid var(--border-color); }
         th { background-color: #f1f5f9; color: #1e293b; }
         tr:hover { background-color: #f8fafc; }
-        .action-btns { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
+        .action-btns { display: flex; gap: 5px; justify-content: center; align-items: center; flex-wrap: nowrap; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: #fff; padding: 25px; border-radius: 10px; width: 650px; max-width: 95%; max-height: 90vh; overflow-y: auto; }
         .permissions-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #cbd5e1; margin-bottom: 15px; }
@@ -257,12 +257,13 @@
                             <button class="btn btn-secondary" onclick="openStoreActionModal('تنزيل')">⬇️ تنزيل</button>
                             <button class="btn" style="background:#3b82f6;" onclick="alert('لعرض المنتجات والكميات المتبقية، انظر للجدول بالأسفل مباشرة.')">🛍️ المنتجات</button>
                             <button class="btn" style="background:#6366f1;" onclick="document.getElementById('techMovementsModal').style.display='flex'">📊 الحركات</button>
+                            <button class="btn btn-secondary" onclick="window.print()">🖨️ طباعة</button>
                         </div>
                     </div>
                     <div class="card" style="padding: 0;">
                         <div class="table-responsive">
                             <table>
-                                <thead><tr><th>الفني</th><th>المنتج / السبب</th><th>الكمية المتبقية</th><th style="text-align:center;">تقرير واتساب</th></tr></thead>
+                                <thead><tr><th>الفني</th><th>المنتج / السبب</th><th>الكمية المتبقية</th><th style="text-align:center;">الإجراءات (تعديل / واتساب)</th></tr></thead>
                                 <tbody id="tech-store-table-body"></tbody>
                             </table>
                         </div>
@@ -287,6 +288,16 @@
                             <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary-dark); font-size:1.05rem;">🛠️ أسباب الصيانة</h3><button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="openBasicModal('reason')">+ إضافة</button></div>
                             <input type="text" class="form-control" placeholder="🔍 بحث سبب..." oninput="filterBasicData('reasons-tbody', this.value)" style="margin-bottom:10px;">
                             <div class="table-responsive"><table><tbody id="reasons-tbody"></tbody></table></div>
+                        </div>
+                        <div class="card" style="margin-bottom:0;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary-dark); font-size:1.05rem;">👔 المناديب</h3><button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="openBasicModal('delegate')">+ إضافة</button></div>
+                            <input type="text" class="form-control" placeholder="🔍 بحث مندوب..." oninput="filterBasicData('delegates-tbody', this.value)" style="margin-bottom:10px;">
+                            <div class="table-responsive"><table><tbody id="delegates-tbody"></tbody></table></div>
+                        </div>
+                        <div class="card" style="margin-bottom:0;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3 style="color:var(--primary-dark); font-size:1.05rem;">📋 المنسقون</h3><button class="btn" style="padding:4px 10px; font-size:0.75rem;" onclick="openBasicModal('coordinator')">+ إضافة</button></div>
+                            <input type="text" class="form-control" placeholder="🔍 بحث منسق..." oninput="filterBasicData('coordinators-tbody', this.value)" style="margin-bottom:10px;">
+                            <div class="table-responsive"><table><tbody id="coordinators-tbody"></tbody></table></div>
                         </div>
                     </div>
                 </div>
@@ -428,7 +439,12 @@
 
                 <!-- 13. النسخة الاحتياطية -->
                 <div id="backup-restore" class="tab-content">
-                    <h2 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 20px;">💾 النسخة الاحتياطية وإدارة البيانات</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                        <h2 style="font-size: 1.4rem; color: var(--primary-dark); margin: 0;">💾 النسخة الاحتياطية وإدارة البيانات</h2>
+                        <span style="font-size: 0.9rem; color: var(--success); font-weight: bold; background: #f0fdf4; padding: 6px 12px; border-radius: 6px; border: 1px solid #bbf7d0;">
+                            ℹ️ يتم أخذ نسخة احتياطية كاملة ونقل بيانات تلقائي كل يوم الساعة 12:00 صباحاً
+                        </span>
+                    </div>
                     
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
                         <div class="card" style="margin:0; text-align:center;">
@@ -486,6 +502,9 @@
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
                     <div><label>العنوان التفصيلي</label><input type="text" id="c-address" class="form-control" placeholder="أدخل العنوان..."></div>
+                    <div><label>العنوان الوطني (يظهر في الفاتورة)</label><input type="text" id="c-national-address" class="form-control" placeholder="العنوان الوطني..."></div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
                     <div><label>رابط الموقع (GPS)</label><input type="url" id="c-gps" class="form-control" placeholder="https://maps.google.com/..."></div>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px;">
@@ -637,6 +656,8 @@
             'aqua_pure_regions_db': 'regions',
             'aqua_pure_devices_db': 'devices',
             'aqua_pure_reasons_db': 'reasons',
+            'aqua_pure_delegates_db': 'delegates',
+            'aqua_pure_coordinators_db': 'coordinators',
             'aqua_pure_sys_settings_db': 'sysSettings'
         };
 
@@ -701,7 +722,7 @@
         }
 
         function sendWhatsAppMsg(phone, text) {
-            if(!phone) return alert('لا يوجد رقم جوال مسجل للعميل.');
+            if(!phone) return alert('لا يوجد رقم جوال مسجل.');
             let p = formatPhone(phone);
             let url = `https://wa.me/${p}?text=${text}`;
             window.open(url, '_blank');
@@ -730,6 +751,8 @@
         if(getDB('aqua_pure_regions_db').length === 0) setDB('aqua_pure_regions_db', ["الرياض", "الدمام", "جدة", "القطيف"]);
         if(getDB('aqua_pure_devices_db').length === 0) setDB('aqua_pure_devices_db', ["فلتر 7 مراحل", "برادة مياه", "محطة تحلية"]);
         if(getDB('aqua_pure_reasons_db').length === 0) setDB('aqua_pure_reasons_db', ["تغيير شمعات", "فحص دوري"]);
+        if(getDB('aqua_pure_delegates_db').length === 0) setDB('aqua_pure_delegates_db', ["مندوب 1"]);
+        if(getDB('aqua_pure_coordinators_db').length === 0) setDB('aqua_pure_coordinators_db', ["منسق 1"]);
         if(getDB('aqua_pure_techs_db').length === 0) setDB('aqua_pure_techs_db', [{ name: "أحمد البصراوي", phone: "0500000001", status: "نشط" }, { name: "أحمد الإيط", phone: "0500000002", status: "نشط" }]);
         
         let localCust = getDB('aqua_pure_customers_db'); if(localCust.length === 0 && !Array.isArray(JSON.parse(localStorage.getItem('aqua_pure_customers_db')))) setDB('aqua_pure_customers_db', []);
@@ -903,7 +926,7 @@
             document.getElementById('modal-add-row-btn').innerText = isMaint ? "+ إضافة سبب" : "+ إضافة جهاز";
             document.getElementById('modal-date-label').innerText = isMaint ? "تاريخ الصيانة" : "تاريخ التركيب";
             document.getElementById('c-code').value = getNextCustomerCode();
-            ['c-name','c-tax-number','c-phone','c-phone2','c-address','c-gps','c-notes'].forEach(id => document.getElementById(id).value = '');
+            ['c-name','c-tax-number','c-phone','c-phone2','c-address','c-national-address','c-gps','c-notes'].forEach(id => { let el = document.getElementById(id); if(el) el.value = ''; });
             document.getElementById('c-type').value = 'عميل'; document.getElementById('c-install-date').value = new Date().toISOString().split('T')[0];
             document.getElementById('customer-devices-container').innerHTML = ''; document.getElementById('cust-total-price').innerText = "0";
             addCustomerDeviceRow(); document.getElementById('customerModal').style.display = 'flex';
@@ -912,7 +935,7 @@
         function openEditCustomer(code) {
             currentModalMode = 'edit'; populateDynamicDropdowns(); let c = getDB('aqua_pure_customers_db').find(x => String(x.code) === String(code));
             if(c) {
-                document.getElementById('c-code').value = c.code; document.getElementById('c-type').value = c.type || 'عميل'; document.getElementById('c-tax-number').value = c.customerTax || ''; document.getElementById('c-name').value = c.name; document.getElementById('c-phone').value = c.phone; document.getElementById('c-phone2').value = c.phone2 || ''; document.getElementById('c-address').value = c.address || ''; document.getElementById('c-gps').value = c.gps || ''; document.getElementById('c-region').value = c.region || ''; document.getElementById('c-tech').value = c.tech || ''; document.getElementById('c-notes').value = c.notes || ''; document.getElementById('c-install-date').value = c.installDate || new Date().toISOString().split('T')[0];
+                document.getElementById('c-code').value = c.code; document.getElementById('c-type').value = c.type || 'عميل'; document.getElementById('c-tax-number').value = c.customerTax || ''; document.getElementById('c-name').value = c.name; document.getElementById('c-phone').value = c.phone; document.getElementById('c-phone2').value = c.phone2 || ''; document.getElementById('c-address').value = c.address || ''; if(document.getElementById('c-national-address')) document.getElementById('c-national-address').value = c.nationalAddress || ''; document.getElementById('c-gps').value = c.gps || ''; document.getElementById('c-region').value = c.region || ''; document.getElementById('c-tech').value = c.tech || ''; document.getElementById('c-notes').value = c.notes || ''; document.getElementById('c-install-date').value = c.installDate || new Date().toISOString().split('T')[0];
                 let container = document.getElementById('customer-devices-container'); container.innerHTML = ''; let devicesArr = c.devicesSummary ? c.devicesSummary.split('، ') : [];
                 if(devicesArr.length === 0) addCustomerDeviceRow();
                 devicesArr.forEach(devStr => {
@@ -939,12 +962,12 @@
 
         function saveCustomerAndMaintenance(e) {
             e.preventDefault();
-            let code = document.getElementById('c-code').value; let type = document.getElementById('c-type').value; let customerTax = document.getElementById('c-tax-number').value.trim(); let name = document.getElementById('c-name').value.trim(); let phone = document.getElementById('c-phone').value.trim(); let phone2 = document.getElementById('c-phone2').value.trim(); let address = document.getElementById('c-address').value.trim(); let gps = document.getElementById('c-gps').value.trim(); let region = document.getElementById('c-region').value; let tech = document.getElementById('c-tech').value; let notes = document.getElementById('c-notes').value.trim(); let installDate = document.getElementById('c-install-date').value;
+            let code = document.getElementById('c-code').value; let type = document.getElementById('c-type').value; let customerTax = document.getElementById('c-tax-number').value.trim(); let name = document.getElementById('c-name').value.trim(); let phone = document.getElementById('c-phone').value.trim(); let phone2 = document.getElementById('c-phone2').value.trim(); let address = document.getElementById('c-address').value.trim(); let nationalAddress = document.getElementById('c-national-address') ? document.getElementById('c-national-address').value.trim() : ''; let gps = document.getElementById('c-gps').value.trim(); let region = document.getElementById('c-region').value; let tech = document.getElementById('c-tech').value; let notes = document.getElementById('c-notes').value.trim(); let installDate = document.getElementById('c-install-date').value;
             let devicesSummaryArr = [], totalValue = 0; document.querySelectorAll('.cust-device-row').forEach(row => { let p = parseFloat(row.querySelector('.cust-dev-price').value) || 0; totalValue += p; devicesSummaryArr.push(`${row.querySelector('.cust-dev-type').value} (${p} SAR)`); });
             let devicesSummary = devicesSummaryArr.join('، '); let clients = getDB('aqua_pure_customers_db'); let idx = clients.findIndex(i => String(i.code) === String(code));
             
-            if(idx >= 0) { clients[idx] = { ...clients[idx], type, customerTax, name, phone, phone2, address, gps, region, tech, notes, devicesSummary, totalValue, installDate }; } 
-            else { let d = new Date(installDate); d.setMonth(d.getMonth() + 6); clients.push({ code, type, customerTax, name, phone, phone2, address, gps, region, tech, notes, devicesSummary, totalValue, installDate, lastMaint: installDate, lastMaintValue: totalValue, nextMaint: d.toISOString().split('T')[0], warrantyDuration: "سنتان" }); }
+            if(idx >= 0) { clients[idx] = { ...clients[idx], type, customerTax, name, phone, phone2, address, nationalAddress, gps, region, tech, notes, devicesSummary, totalValue, installDate }; } 
+            else { let d = new Date(installDate); d.setMonth(d.getMonth() + 6); clients.push({ code, type, customerTax, name, phone, phone2, address, nationalAddress, gps, region, tech, notes, devicesSummary, totalValue, installDate, lastMaint: installDate, lastMaintValue: totalValue, nextMaint: d.toISOString().split('T')[0], warrantyDuration: "سنتان" }); }
             setDB('aqua_pure_customers_db', clients); document.getElementById('customerModal').style.display = 'none';
             renderAllActive();
         }
@@ -1129,9 +1152,9 @@
 
         function printCustomerInvoice(code) {
             let c = getDB('aqua_pure_customers_db').find(i => String(i.code) === String(code)); if(!c) return;
-            let cName = sysSettings.nameAr || 'بيور أكوا لأنظمة المياه النقية'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; margin-bottom:10px; border-radius:5px;">` : ''; let custTaxHTML = c.customerTax ? `<p><strong>الرقم الضريبي للعميل:</strong> ${c.customerTax}</p>` : '';
+            let cName = sysSettings.nameAr || 'بيور أكوا لأنظمة المياه النقية'; let cPhone = sysSettings.phone1 || ''; let cUnified = sysSettings.unifiedNumber ? ` | الرقم الموحد: ${sysSettings.unifiedNumber}` : ''; let cTax = sysSettings.tax ? ` | الرقم الضريبي: ${sysSettings.tax}` : ''; let cCR = sysSettings.cr ? ` | س.ت: ${sysSettings.cr}` : ''; let cLogo = sysSettings.logoBase64 ? `<img src="${sysSettings.logoBase64}" style="max-height:80px; margin-bottom:10px; border-radius:5px;">` : ''; let custTaxHTML = c.customerTax ? `<p><strong>الرقم الضريبي للعميل:</strong> ${c.customerTax}</p>` : ''; let nationalAddrHTML = c.nationalAddress ? `<p><strong>العنوان الوطني:</strong> ${c.nationalAddress}</p>` : '';
             let win = window.open('', '_blank');
-            win.document.write(`<html lang="ar" dir="rtl"><head><title>فاتورة - ${c.name}</title><style>body{font-family:'Cairo',sans-serif; padding:30px;} table{width:100%; border-collapse:collapse; margin-top:20px; font-size:0.9rem;} th,td{border:1px solid #cbd5e1; padding:10px; text-align:right;} th{background:#f1f5f9;}</style></head><body><div style="text-align:center; border-bottom:2px solid #0284c7; padding-bottom:15px; margin-bottom:20px;">${cLogo}<h2 style="color:#0369a1; margin-bottom:5px;">${cName}</h2><p style="font-size:0.9rem; color:#64748b;">هاتف: ${cPhone}${cUnified}${cCR}${cTax}</p><h3 style="margin-top:10px; background:#f1f5f9; display:inline-block; padding:5px 15px; border-radius:5px;">فاتورة ضريبية مبسطة</h3></div><div style="display:flex; justify-content:space-between; margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:6px;"><div><p><strong>العميل / الشركة:</strong> ${c.name}</p>${custTaxHTML}<p><strong>رقم الجوال:</strong> ${c.phone}${c.phone2?' / '+c.phone2:''}</p><p><strong>المنطقة:</strong> ${c.region || '-'}</p></div><div><p><strong>رقم الفاتورة:</strong> ${c.code}</p><p><strong>التاريخ:</strong> ${c.installDate || '-'}</p></div></div><table><thead><tr><th>الخدمة / الجهاز</th><th>السعر (SAR)</th></tr></thead><tbody><tr><td>${c.devicesSummary || 'تركيب وصيانة'}</td><td>${c.totalValue || 0}</td></tr></tbody></table><div style="text-align:left; font-size:1.2rem; font-weight:bold; color:#0369a1; margin-bottom:20px;">الإجمالي المستحق: ${c.totalValue || 0} SAR</div><div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:15px; color:#64748b;"><p>شكراً لاختياركم ${cName}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=AquaPure_Inv_${c.code}_${c.totalValue}SAR" style="width:120px; height:120px;"></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+            win.document.write(`<html lang="ar" dir="rtl"><head><title>فاتورة - ${c.name}</title><style>body{font-family:'Cairo',sans-serif; padding:30px;} table{width:100%; border-collapse:collapse; margin-top:20px; font-size:0.9rem;} th,td{border:1px solid #cbd5e1; padding:10px; text-align:right;} th{background:#f1f5f9;}</style></head><body><div style="text-align:center; border-bottom:2px solid #0284c7; padding-bottom:15px; margin-bottom:20px;">${cLogo}<h2 style="color:#0369a1; margin-bottom:5px;">${cName}</h2><p style="font-size:0.9rem; color:#64748b;">هاتف: ${cPhone}${cUnified}${cCR}${cTax}</p><h3 style="margin-top:10px; background:#f1f5f9; display:inline-block; padding:5px 15px; border-radius:5px;">فاتورة ضريبية مبسطة</h3></div><div style="display:flex; justify-content:space-between; margin-bottom:20px; padding:15px; background:#f8fafc; border-radius:6px;"><div><p><strong>العميل / الشركة:</strong> ${c.name}</p>${custTaxHTML}${nationalAddrHTML}<p><strong>رقم الجوال:</strong> ${c.phone}${c.phone2?' / '+c.phone2:''}</p><p><strong>المنطقة:</strong> ${c.region || '-'}</p></div><div><p><strong>رقم الفاتورة:</strong> ${c.code}</p><p><strong>التاريخ:</strong> ${c.installDate || '-'}</p></div></div><table><thead><tr><th>الخدمة / الجهاز</th><th>السعر (SAR)</th></tr></thead><tbody><tr><td>${c.devicesSummary || 'تركيب وصيانة'}</td><td>${c.totalValue || 0}</td></tr></tbody></table><div style="text-align:left; font-size:1.2rem; font-weight:bold; color:#0369a1; margin-bottom:20px;">الإجمالي المستحق: ${c.totalValue || 0} SAR</div><div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed #cbd5e1; padding-top:15px; color:#64748b;"><p>شكراً لاختياركم ${cName}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=AquaPure_Inv_${c.code}_${c.totalValue}SAR" style="width:120px; height:120px;"></div><script>window.onload=function(){window.print();}<\/script></body></html>`);
             win.document.close();
         }
 
@@ -1193,8 +1216,20 @@
                     let techObj = getDB('aqua_pure_techs_db').find(t => t.name === s.tech);
                     let techPhone = techObj ? techObj.phone : '';
                     let reportMsg = encodeURIComponent(`مرحباً يا الكابتن ${s.tech}، مرفق تقرير بعهدتك الحالية:\n${techReports[s.tech].join('\n')}\n(بيور أكوا لأنظمة المياه النقية)`);
-                    let waBtn = techPhone ? `<button type="button" class="btn btn-whatsapp" style="padding:4px 8px;" onclick="sendWhatsAppMsg('${techPhone}', '${reportMsg}')">إرسال التقرير 💬</button>` : '-';
-                    html+=`<tr><td>${s.tech}</td><td>${s.item}</td><td style="font-weight:bold;">${s.qty}</td><td style="text-align:center;">${waBtn}</td></tr>`;
+                    
+                    let waBtn = techPhone ? `<button type="button" class="btn btn-whatsapp" style="padding:4px 8px;" onclick="sendWhatsAppMsg('${techPhone}', '${reportMsg}')">واتساب</button>` : '';
+                    
+                    html+=`<tr>
+                        <td>${s.tech}</td>
+                        <td>${s.item}</td>
+                        <td style="font-weight:bold;">${s.qty}</td>
+                        <td style="text-align:center;">
+                            <div class="action-btns">
+                                <button class="btn btn-warning" style="padding:4px 8px;" onclick="openStoreActionModal('صرف')">تعديل</button>
+                                ${waBtn}
+                            </div>
+                        </td>
+                    </tr>`;
                 }
             });
             document.getElementById('tech-store-table-body').innerHTML = html||'<tr><td colspan="4" style="text-align:center;">لا يوجد منتجات مع الفنيين</td></tr>'; 
@@ -1234,16 +1269,62 @@
         }
         function deleteStoreItem(id) { if(confirm('حذف الحركة؟')){ let s=getDB('aqua_pure_store_db').filter(i=>i.id!==id); setDB('aqua_pure_store_db',s); renderAllActive(); } }
 
-        function renderBasicDataTables() { filterBasicData('regions-tbody', ''); filterBasicData('devices-tbody', ''); filterBasicData('reasons-tbody', ''); }
+        function renderBasicDataTables() { 
+            filterBasicData('regions-tbody', ''); 
+            filterBasicData('devices-tbody', ''); 
+            filterBasicData('reasons-tbody', ''); 
+            filterBasicData('delegates-tbody', ''); 
+            filterBasicData('coordinators-tbody', ''); 
+        }
+
         function filterBasicData(tbodyId, searchVal) {
-            let key = ''; if(tbodyId === 'regions-tbody') key = 'aqua_pure_regions_db'; else if(tbodyId === 'devices-tbody') key = 'aqua_pure_devices_db'; else key = 'aqua_pure_reasons_db';
+            let key = ''; 
+            if(tbodyId === 'regions-tbody') key = 'aqua_pure_regions_db'; 
+            else if(tbodyId === 'devices-tbody') key = 'aqua_pure_devices_db'; 
+            else if(tbodyId === 'reasons-tbody') key = 'aqua_pure_reasons_db';
+            else if(tbodyId === 'delegates-tbody') key = 'aqua_pure_delegates_db';
+            else if(tbodyId === 'coordinators-tbody') key = 'aqua_pure_coordinators_db';
+
             let html = ''; searchVal = searchVal.toLowerCase();
             getDB(key).forEach(i => { if(i.toLowerCase().includes(searchVal)) html += `<tr><td>${i}</td><td style="text-align:left;"><button class="btn btn-danger" style="padding:4px 10px;" onclick="deleteBasicItem('${key}','${i}')">حذف</button></td></tr>`; });
             document.getElementById(tbodyId).innerHTML = html || '<tr><td colspan="2" style="text-align:center;">لا يوجد</td></tr>';
         }
-        function openBasicModal(type) { document.getElementById('basic-item-type').value = 'aqua_pure_'+type+'s_db'; document.getElementById('basic-input-name').value=''; document.getElementById('basicModal').style.display='flex'; }
-        function saveBasicItem(e) { e.preventDefault(); let key=document.getElementById('basic-item-type').value; let val=document.getElementById('basic-input-name').value; let list=getDB(key); if(!list.includes(val)){list.push(val); setDB(key,list); renderAllActive(); populateDynamicDropdowns();} document.getElementById('basicModal').style.display='none'; }
-        function deleteBasicItem(key, val) { if(confirm('تأكيد الحذف؟')) { let list=getDB(key).filter(i=>i!==val); setDB(key,list); renderAllActive(); populateDynamicDropdowns(); } }
+
+        function openBasicModal(type) { 
+            let dbName = '';
+            if(type === 'region') dbName = 'aqua_pure_regions_db';
+            else if(type === 'device') dbName = 'aqua_pure_devices_db';
+            else if(type === 'reason') dbName = 'aqua_pure_reasons_db';
+            else if(type === 'delegate') dbName = 'aqua_pure_delegates_db';
+            else if(type === 'coordinator') dbName = 'aqua_pure_coordinators_db';
+
+            document.getElementById('basic-item-type').value = dbName; 
+            document.getElementById('basic-input-name').value = ''; 
+            document.getElementById('basicModal').style.display = 'flex'; 
+        }
+
+        function saveBasicItem(e) { 
+            e.preventDefault(); 
+            let key = document.getElementById('basic-item-type').value; 
+            let val = document.getElementById('basic-input-name').value; 
+            let list = getDB(key); 
+            if(!list.includes(val)) {
+                list.push(val); 
+                setDB(key, list); 
+                renderAllActive(); 
+                populateDynamicDropdowns();
+            } 
+            document.getElementById('basicModal').style.display = 'none'; 
+        }
+
+        function deleteBasicItem(key, val) { 
+            if(confirm('تأكيد الحذف؟')) { 
+                let list = getDB(key).filter(i => i !== val); 
+                setDB(key, list); 
+                renderAllActive(); 
+                populateDynamicDropdowns(); 
+            } 
+        }
 
         function renderUsersList() { 
             let html=''; let s = document.getElementById('search-users-input') ? document.getElementById('search-users-input').value.toLowerCase() : '';
